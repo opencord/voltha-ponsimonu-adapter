@@ -116,6 +116,10 @@ adapter_ponsim_onu: local-protos local-pyvoltha
 docker-push:
 	docker push ${PONSIMONU_IMAGENAME}:${DOCKER_TAG}
 
+docker-kind-load:
+	@if [ "`kind get clusters | grep voltha-$(TYPE)`" = '' ]; then echo "no voltha-$(TYPE) cluster found" && exit 1; fi
+	kind load docker-image ${PONSIMONU_IMAGENAME}:${DOCKER_TAG} --name=voltha-$(TYPE) --nodes voltha-minimal-worker,voltha-minimal-worker2,voltha-minimal-control-plane
+
 ## lint and unit tests
 
 PATH:=$(GOPATH)/bin:$(PATH)
