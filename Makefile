@@ -30,6 +30,7 @@ DOCKER_REGISTRY            ?=
 DOCKER_REPOSITORY          ?=
 DOCKER_TAG                 ?= ${VERSION}$(shell [[ ${DOCKER_LABEL_VCS_DIRTY} == "true" ]] && echo "-dirty" || true)
 PONSIMONU_IMAGENAME        := ${DOCKER_REGISTRY}${DOCKER_REPOSITORY}voltha-adapter-ponsim-onu
+TYPE                       ?= minimal
 
 ## Docker labels. Only set ref and commit date if committed
 DOCKER_LABEL_VCS_URL       ?= $(shell git remote get-url $(shell git remote))
@@ -115,6 +116,10 @@ adapter_ponsim_onu: local-protos local-pyvoltha
 
 docker-push:
 	docker push ${PONSIMONU_IMAGENAME}:${DOCKER_TAG}
+
+docker-kind-load:
+	@if [ "`kind get clusters | grep voltha-$(TYPE)`" = '' ]; then echo "no voltha-$(TYPE) cluster found" && exit 1; fi
+	kind load docker-image ${PONSIMONU_IMAGENAME}:${DOCKER_TAG} --name=voltha-$(TYPE) --nodes $(shell kubectl get nodes --template='{{range .items}}{{.metadata.name}},{{end}}' | sed 's/,$$//') 
 
 ## lint and unit tests
 
